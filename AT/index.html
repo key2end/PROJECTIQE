@@ -1,80 +1,143 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Time Display</title>
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-        
-        body {
-            background-color: #000;
-            color: #0fd;
-            font-family: 'Courier New', monospace;
-            overflow: hidden;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-        }
-        
-        .container {
-            transform: rotate(-90deg);
-            text-align: center;
-        }
-        
-        .time {
-            font-size: 48px;
-            font-weight: bold;
-            letter-spacing: 2px;
-            margin-bottom: 20px;
-        }
-        
-        .ip {
-            font-size: 24px;
-            opacity: 0.7;
-        }
-    </style>
+<meta charset="UTF-8">
+<title>Time Display – Rotated & Centered</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<style>
+    *{margin:0;padding:0;box-sizing:border-box}
+    html,body{height:100%;overflow:hidden}
+    body{
+        background:#000;color:#0fd;
+        font-family:'Courier New',monospace;
+        display:flex;justify-content:center;align-items:center;
+    }
+
+    /* ---------- ROTATED CONTAINER ---------- */
+    .wrapper{
+        width:100vh;               /* becomes height after rotation */
+        height:100vw;              /* becomes width after rotation */
+        transform:rotate(-90deg);
+        display:flex;
+        flex-direction:column;
+        justify-content:center;    /* <-- squishes everything to the middle */
+        gap:12px;                  /* space between rows */
+    }
+
+    /* ---------- EACH ROW ---------- */
+    .row{
+        display:flex;
+        justify-content:space-between;
+        align-items:center;
+        padding:0 45px;
+        width:100%;
+    }
+    .left{
+        display:flex;
+        align-items:center;
+        gap:14px;                  /* space between prefix & number */
+    }
+    .prefix{
+        font-size:34px;
+        opacity:0.85;
+        letter-spacing:1.5px;
+    }
+    .digits{
+        font-size:82px;
+        font-weight:bold;
+        letter-spacing:5px;
+        white-space:nowrap;
+    }
+    .shared{
+        font-size:82px;
+        font-weight:bold;
+        letter-spacing:5px;
+        white-space:nowrap;
+    }
+
+    /* ---------- RESPONSIVE SCALING ---------- */
+    @media (max-height:900px){
+        .prefix{font-size:30px}
+        .digits,.shared{font-size:72px;letter-spacing:4px}
+        .row{padding:0 35px}
+        .left{gap:12px}
+        .wrapper{gap:10px}
+    }
+    @media (max-height:700px){
+        .prefix{font-size:26px}
+        .digits,.shared{font-size:60px;letter-spacing:3px}
+        .row{padding:0 25px}
+        .left{gap:10px}
+        .wrapper{gap:8px}
+    }
+    @media (max-height:500px){
+        .prefix{font-size:22px}
+        .digits,.shared{font-size:50px;letter-spacing:2px}
+        .row{padding:0 18px}
+        .left{gap:8px}
+        .wrapper{gap:6px}
+    }
+</style>
 </head>
 <body>
-    <div class="container">
-        <div class="time" id="time">--</div>
-        <div class="ip" id="ip">loading ip...</div>
+
+<div class="wrapper">
+    <!-- UTC -->
+    <div class="row">
+        <div class="left"><span class="prefix">u</span><span class="digits" id="utc">--------</span></div>
+        <div></div> <!-- dummy for spacing -->
     </div>
 
-    <script>
-        // Get user's IP address
-        fetch('https://api.ipify.org?format=json')
-            .then(response => response.json())
-            .then(data => {
-                document.getElementById('ip').textContent = data.ip;
-            })
-            .catch(err => {
-                document.getElementById('ip').textContent = 'ip unavailable';
-            });
-        
-        // Update time every 10ms for milliseconds display
-        function updateTime() {
-            const now = new Date();
-            
-            const month = String(now.getMonth() + 1).padStart(2, '0');
-            const day = String(now.getDate()).padStart(2, '0');
-            const hours = String(now.getHours()).padStart(2, '0');
-            const minutes = String(now.getMinutes()).padStart(2, '0');
-            const seconds = String(now.getSeconds()).padStart(2, '0');
-            const milliseconds = String(now.getMilliseconds()).padStart(1, '0');
-            
-            const timeString = `${month}${day}${hours}${minutes}${seconds}${milliseconds}`;
-            
-            document.getElementById('time').textContent = timeString;
-        }
-        
-        updateTime();
-        setInterval(updateTime, 10);
-    </script>
+    <!-- UNIX + SHARED -->
+    <div class="row">
+        <div class="left"><span class="prefix">x</span><span class="digits" id="unix">--------</span></div>
+        <div class="shared" id="shared">-. -</div>
+    </div>
+
+    <!-- LOCAL -->
+    <div class="row">
+        <div class="left"><span class="prefix">o</span><span class="digits" id="local">--------</span></div>
+        <div></div> <!-- dummy for spacing -->
+    </div>
+</div>
+
+<script>
+function pad2(n){return String(n).padStart(2,'0')}
+
+function update(){
+    const now = new Date();
+    const ms  = now.getMilliseconds();
+    const tenth = Math.floor(ms/100);
+
+    /* ----- LOCAL ----- */
+    const lM = pad2(now.getMonth()+1);
+    const lD = pad2(now.getDate());
+    const lH = pad2(now.getHours());
+    const lMi= pad2(now.getMinutes());
+    const lS = pad2(now.getSeconds());
+    const localBase = lM+lD+lH+lMi+lS[0];
+    document.getElementById('local').textContent = localBase;
+
+    /* ----- UTC ----- */
+    const uM = pad2(now.getUTCMonth()+1);
+    const uD = pad2(now.getUTCDate());
+    const uH = pad2(now.getUTCHours());
+    const uMi= pad2(now.getUTCMinutes());
+    const uS = pad2(now.getUTCSeconds());
+    const utcBase = uM+uD+uH+uMi+uS[0];
+    document.getElementById('utc').textContent = utcBase;
+
+    /* ----- UNIX (first 8 digits in pairs + 9th) ----- */
+    const unix = Math.floor(now.getTime()/1000).toString().padStart(10,'0');
+    const unixBase = unix.slice(0,2)+unix.slice(2,4)+unix.slice(4,6)+unix.slice(6,8)+unix[8];
+    document.getElementById('unix').textContent = unixBase;
+
+    /* ----- SHARED ----- */
+    document.getElementById('shared').textContent = `${lS[1]}.${tenth}`;
+}
+
+update();
+setInterval(update,100);
+</script>
 </body>
 </html>
