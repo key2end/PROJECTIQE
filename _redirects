@@ -1,0 +1,3 @@
+if (window.location.pathname.toLowerCase() === '/at') {
+  window.location.pathname = '/AT';
+}
