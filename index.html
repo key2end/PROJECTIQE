@@ -3,229 +3,200 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>THRREAD</title>
+    <title>descarrte - minimal gap</title>
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Bangers&family=Creepster&family=Lato:wght@900&family=Monoton&family=Montserrat:wght@900&family=Open+Sans:wght@800&family=Orbitron:wght@900&family=Poppins:wght@900&family=Press+Start+2P&family=Roboto:wght@900&family=Rock+Salt&display=swap" rel="stylesheet">
+
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
+        :root {
+            --bg: #0a0a0a;
+            --pink-glow: #d0f;
+            
+            /* Your sequence colors */
+            --c1: #0df; /* Cyan */
+            --c2: #d0f; /* Purple */
+            --c3: #0fd; /* Green */
         }
-        
+
         body {
-            background-color: #000;
-            color: #0fd;
-            font-family: 'Courier New', monospace;
-            overflow: hidden;
-        }
-        
-        .wrapper {
-            position: fixed;
-            inset: 0;
+            background-color: var(--bg);
+            color: white;
+            height: 100vh;
+            margin: 0;
             display: flex;
+            flex-direction: column;
             justify-content: center;
             align-items: center;
+            font-family: 'Courier New', monospace; 
+            overflow: hidden;
+            user-select: none;
         }
+
+        .content-wrapper {
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            animation: layoutMoveUp 1s cubic-bezier(0.22, 1, 0.36, 1) 2.0s forwards;
+        }
+
+        .icon {
+            transform: scaleX(-1); 
+            width: 160px;
+            height: 160px;
+            overflow: visible;
+            flex-shrink: 0; 
+        }
+
+        .heart-path {
+            stroke: white;
+            stroke-width: 2.5; 
+            fill: none;
+            stroke-linecap: round;
+            stroke-linejoin: round;
+            stroke-dasharray: 100;
+            stroke-dashoffset: 100;
+            animation: drawHeart 2.2s ease-out forwards, pulseGlow 2.5s ease-in-out infinite 2.5s;
+        }
+
+        /* --- BLOB LOGIC --- */
         
-        .content {
+        .minus-container {
+            opacity: 0;
+            animation: 
+                minusFadeIn 0.5s ease-out forwards 0.7s,
+                pulseGlow 2.5s ease-in-out infinite 2.5s;
+        }
+
+        .blob {
+            animation: infiniteScroll 1.5s linear infinite;
+        }
+
+        .b1 { fill: var(--c1); } 
+        .b2 { fill: var(--c2); } 
+        .b3 { fill: var(--c3); }  
+        .b4 { fill: var(--c1); } 
+        .b5 { fill: var(--c2); } 
+        .b6 { fill: var(--c3); } 
+
+        /* --- text box --- */
+        #t1 {
+            /* UPDATED: reduced from 6px to 2px */
+            margin-top: 2px;
+            display: flex;
+            gap: 0; 
+            align-items: center;
+            justify-content: center;
+            width: 100%;
+            height: 8em;
+        }
+
+        .char-wrapper {
             display: flex;
             align-items: center;
-            gap: 16px;
-        }
-        
-        .svg-wrapper {
-            width: 80px;
-            height: 80px;
+            justify-content: center;
+            width: 9vw; 
+            max-width: 80px; 
+            height: 100%;
             position: relative;
         }
-        
-        .logo-svg {
-            width: 91px;
-            height: 91px;
-            position: absolute;
-            left: 0;
-            top: 0;
-            opacity: 0;
-        }
-        
-        .logo-svg.animate-in {
-            animation: svgEnter 3.5s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
-        }
-        
-        .logo-svg circle {
-            opacity: 0;
-            transform-origin: center;
-        }
-        
-        .logo-svg.animate-in circle:nth-child(2) {
-            animation: circleAppear 0.4s ease-out 0.6s forwards;
-        }
-        
-        .logo-svg.animate-in circle:nth-child(3) {
-            animation: circleAppear 0.4s ease-out 0.9s forwards;
-        }
-        
-        .logo-svg.animate-in circle:nth-child(4) {
-            animation: circleAppear 0.4s ease-out 1.2s forwards;
-        }
-        
-        .logo-svg.animate-in circle:nth-child(5) {
-            animation: circleAppear 0.4s ease-out 1.5s forwards;
-        }
-        
-        .logo-svg path {
-            stroke-dasharray: 15;
-            stroke-dashoffset: 15;
-        }
-        
-        .logo-svg.animate-in path {
-            animation: pathDraw 0.6s ease-out 1.6s forwards;
-        }
-        
-        .text-wrapper {
-            position: relative;
-            height: 52px;
-            display: flex;
-            align-items: center;
-        }
-        
-        .logo-text {
-            font-size: 44px;
-            font-weight: bold;
-            letter-spacing: 3px;
+
+        .char-inner {
+            display: inline-block;
+            width: 100%;
+            text-align: center;
+            font-size: clamp(2rem, 7vw, 4.5rem);
             line-height: 1;
+            opacity: 0; 
+            color: transparent;
+            -webkit-text-stroke: 1px currentColor; 
+            white-space: pre;
+            transition: color 0.12s ease;
+            will-change: color, font-family;
+            animation: writeIn 0.8s forwards, chaosCycle 5.5s cubic-bezier(0.45, 0, 0.55, 1) infinite;
         }
-        
-        .d0f {
-            color: #dd00ff;
+
+        .l1 .char-inner { animation-delay: 2.2s, 0.5s; }
+        .l2 .char-inner { animation-delay: 2.3s, 1.0s; }
+        .l3 .char-inner { animation-delay: 2.4s, 1.5s; }
+        .l4 .char-inner { animation-delay: 2.5s, 2.0s; }
+        .l5 .char-inner { animation-delay: 2.6s, 2.5s; }
+        .l6 .char-inner { animation-delay: 2.7s, 0.75s; }
+        .l7 .char-inner { animation-delay: 2.7s, 0.75s; filter: hue-rotate(180deg); }
+        .l8 .char-inner { animation-delay: 2.9s, 1.75s; }
+        .l9 .char-inner { animation-delay: 3.0s, 2.25s; }
+
+        /* --- keyframes --- */
+        @keyframes drawHeart { to { stroke-dashoffset: 0; } }
+        @keyframes minusFadeIn { to { opacity: 1; } }
+        @keyframes layoutMoveUp { to { transform: translateY(-50px); } }
+
+        @keyframes infiniteScroll {
+            from { transform: translateX(0); } 
+            to { transform: translateX(15px); } 
         }
-        
-        .cursor {
-            width: 3px;
-            height: 44px;
-            background-color: #0fd;
-            margin-left: 2px;
-            opacity: 0;
+
+        @keyframes pulseGlow {
+            0%, 100% { filter: drop-shadow(0 0 2px var(--pink-glow)); }
+            50% { filter: drop-shadow(0 0 15px var(--pink-glow)); }
         }
-        
-        .cursor.blink {
-            animation: cursorBlink 0.8s step-end infinite;
+
+        @keyframes writeIn {
+            0% { opacity: 0; -webkit-text-fill-color: transparent; transform: scale(0.9); }
+            100% { opacity: 1; -webkit-text-fill-color: currentColor; transform: scale(1); }
         }
-        
-        @keyframes svgEnter {
-            0% {
-                opacity: 0;
-                transform: translate(calc(50vw - 23px), calc(50vh - 23px)) scale(2.5) rotate(-90deg);
-            }
-            40% {
-                opacity: 1;
-            }
-            100% {
-                opacity: 1;
-                transform: translate(0, 0) scale(1) rotate(360deg);
-            }
-        }
-        
-        @keyframes circleAppear {
-            0% {
-                opacity: 0;
-                transform: scale(0);
-            }
-            50% {
-                transform: scale(1.3);
-            }
-            100% {
-                opacity: 1;
-                transform: scale(1);
-            }
-        }
-        
-        @keyframes pathDraw {
-            to {
-                stroke-dashoffset: 0;
-            }
-        }
-        
-        @keyframes cursorBlink {
-            0%, 50% {
-                opacity: 1;
-            }
-            51%, 100% {
-                opacity: 0;
-            }
+
+        @keyframes chaosCycle {
+            0%   { color: #00ddff; font-family: 'Roboto', sans-serif; }
+            9%   { color: #00ffaa; font-family: 'Orbitron', sans-serif; }
+            18%  { color: #00ff00; font-family: 'Open Sans', sans-serif; }
+            27%  { color: #00ffdd; font-family: 'Creepster', cursive; }
+            36%  { color: #00d0ff; font-family: 'Montserrat', sans-serif; }
+            45%  { color: #8000ff; font-family: 'Press Start 2P', cursive; }
+            54%  { color: #d000ff; font-family: 'Lato', sans-serif; }
+            63%  { color: #ff00dd; font-family: 'Monoton', cursive; }
+            72%  { color: #dd00ff; font-family: 'Poppins', sans-serif; }
+            81%  { color: #00ddff; font-family: 'Rock Salt', cursive; }
+            90%  { color: #00ffaa; font-family: 'Bangers', cursive; }
+            100% { color: #00ddff; font-family: 'Roboto', sans-serif; }
         }
     </style>
 </head>
 <body>
-    <div class="wrapper">
-        <div class="content">
-            <div class="svg-wrapper">
-                <svg class="logo-svg" width="46" height="46" viewBox="-350 -130 1100 1100" fill="none">
-                    <g stroke="#0fd" stroke-width="39" stroke-linecap="round" stroke-linejoin="round">
-                        <!-- curved lines -->
-                        <path d="M-93 545c10-37 24-73 40-107M132 218c28-20 58-38 89-53"/>
-                        
-                        <!-- circles -->
-                        <circle cx="458" cy="680" r="89"/>
-                        <circle cx="417" cy="101" r="89"/>
-                        <circle cx="61" cy="279" r="89"/>
-                        <circle cx="-117" cy="634" r="89"/>
-                        
-                        <!-- connecting lines -->
-                        <path d="M451 591l-23-305"/>
-                        <path d="M279 666l-305-25"/>
-                    </g>
-                </svg>
-            </div>
-            <div class="text-wrapper">
-                <div class="logo-text"></div>
-                <div class="cursor"></div>
-            </div>
+    <div class="content-wrapper">
+        <svg class="icon" viewBox="0 0 24 24">
+            <defs>
+                <clipPath id="capsule-clip">
+                    <rect x="13.75" y="13.75" width="8.5" height="2.5" rx="1.25" ry="1.25" />
+                </clipPath>
+            </defs>
+
+            <path class="heart-path" d="m14.876 18.99-1.368 1.323a2 2 0 0 1-3 .019L5 15c-1.5-1.5-3-3.2-3-5.5a5.5 5.5 0 0 1 9.591-3.676.56.56 0 0 0 .818 0A5.49 5.49 0 0 1 22 9.5a5.2 5.2 0 0 1-.244 1.572"/>
+            
+            <g class="minus-container" clip-path="url(#capsule-clip)">
+                <rect class="blob b1" x="0"  y="13.75" width="7.5" height="2.5" rx="1.25" />
+                <rect class="blob b2" x="5"  y="13.75" width="7.5" height="2.5" rx="1.25" />
+                <rect class="blob b3" x="10" y="13.75" width="7.5" height="2.5" rx="1.25" />
+                <rect class="blob b4" x="15" y="13.75" width="7.5" height="2.5" rx="1.25" />
+                <rect class="blob b5" x="20" y="13.75" width="7.5" height="2.5" rx="1.25" />
+                <rect class="blob b6" x="25" y="13.75" width="7.5" height="2.5" rx="1.25" />
+            </g>
+        </svg>
+
+        <div id="t1">
+            <div class="char-wrapper l1"><span class="char-inner">D</span></div>
+            <div class="char-wrapper l2"><span class="char-inner">E</span></div>
+            <div class="char-wrapper l3"><span class="char-inner">S</span></div>
+            <div class="char-wrapper l4"><span class="char-inner">C</span></div>
+            <div class="char-wrapper l5"><span class="char-inner">A</span></div>
+            <div class="char-wrapper l6"><span class="char-inner">R</span></div>
+            <div class="char-wrapper l7"><span class="char-inner">R</span></div>
+            <div class="char-wrapper l8"><span class="char-inner">T</span></div>
+            <div class="char-wrapper l9"><span class="char-inner">E</span></div>
         </div>
     </div>
-
-    <script>
-        const svg = document.querySelector('.logo-svg');
-        const logoText = document.querySelector('.logo-text');
-        const cursor = document.querySelector('.cursor');
-        const text = 'THRREAD';
-        
-        // Map which characters should be purple (index based)
-        const colorMap = {
-            3: true,
-            4: true,
-            6: true
-        };
-        
-        // Start SVG animation immediately
-        setTimeout(() => {
-            svg.classList.add('animate-in');
-        }, 100);
-        
-        // Start typing animation
-        setTimeout(() => {
-            cursor.style.opacity = '1';
-            cursor.classList.add('blink');
-            
-            let index = 0;
-            const typeInterval = setInterval(() => {
-                if (index < text.length) {
-                    const char = text[index];
-                    if (colorMap[index]) {
-                        logoText.innerHTML += `<span class="d0f">${char}</span>`;
-                    } else {
-                        logoText.innerHTML += char;
-                    }
-                    index++;
-                } else {
-                    clearInterval(typeInterval);
-                    // Stop cursor blinking after a moment
-                    setTimeout(() => {
-                        cursor.classList.remove('blink');
-                        cursor.style.opacity = '0';
-                    }, 800);
-                }
-            }, 120);
-        }, 2400);
-    </script>
 </body>
 </html>
